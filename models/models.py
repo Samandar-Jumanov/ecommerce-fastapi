@@ -28,6 +28,9 @@ class Product(Base):
     owner = relationship('UserModel', back_populates='products')
 
 
+
+
+
 class Payments(Base):
     __tablename__ = 'payments'
     id = Column(Integer , primary_key = True )

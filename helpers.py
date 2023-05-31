@@ -11,8 +11,6 @@ from sqlalchemy.orm import Session
 import jwt 
 from fastapi.security import OAuth2PasswordBearer
 from typing import Tuple 
-from fastapi import UploadFile, File
-import shutil
 load_dotenv()
 DB = os.environ.get('DB')
 secret = os.environ.get('secret')

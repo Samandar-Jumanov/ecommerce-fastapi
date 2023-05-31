@@ -1,10 +1,9 @@
 from models import models, schemas
-from fastapi import HTTPException, status, Depends, UploadFile, File, Request
+from fastapi import HTTPException, status, Depends, UploadFile, File
 from sqlalchemy.orm import Session 
 from datetime import datetime 
 from helpers import get_current_user
 from dotenv import load_dotenv
-import shutil
 import uuid
 id = uuid.uuid4()
 load_dotenv()
@@ -14,24 +13,32 @@ from datetime import datetime
  
 
 
-def create(products: schemas.ProductSchema, db: Session, current_user: models.UserModel = Depends(get_current_user), file: UploadFile= File(...)):
 
+def uploadImage(file: UploadFile = File(...), filename: str = None):
+    if filename is None:
+       filename = file.filename
 
-    filename  = str(id)
-    with open(f'images{filename}') as buffer:
-        shutil.copyfileobj(file.file , buffer ) 
+    with open(f'./images/{filename}', 'wb') as buffer:
+        buffer.write(file.file.read())
+
+    return filename
+
+def create(products: schemas.ProductSchema, db: Session, current_user: models.UserModel = Depends(get_current_user), file: UploadFile = File(...)):
+    if not file.is_image():
+      raise ValueError('File is not an image')
+
+    filename = uploadImage(file=file)
 
     new_product = models.Product(
-        product_name=products.product_name,
-        product_price=products.product_price,
-        product_image=filename,
-        product_description=products.product_description,
-        added_date=datetime.now(),
-        owner_id=current_user.id,
-        owner_location=products.owner_location
+    product_name=products.product_name,
+    product_price=products.product_price,
+    product_image=filename,
+    product_description=products.product_description,
+    added_date=datetime.now(),
+    owner_id=current_user.id,
+    owner_location=products.owner_location
     )
 
-    
    #
     try:
         db.add(new_product)
